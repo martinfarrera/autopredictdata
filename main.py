@@ -1,15 +1,16 @@
 import os
 import pandas as pd
-from ydata_profiling import ProfileReport
 import streamlit as st
 from streamlit_pandas_profiling import st_profile_report
+from ydata_profiling import ProfileReport
+from fuctions import *
 
 def main():
     if os.path.exists('./dataset.csv'):
         df = pd.read_csv('dataset.csv', index_col=0)
 
     with st.sidebar:
-        choice = st.radio('navigation', ['Upload', 'Profiling'])
+        choice = st.radio('navigation', ['Upload', 'Profiling', 'Modelling'])
 
     if choice == 'Upload':
         st.title('Upload Your Dataset (file_name.csv)')
@@ -23,6 +24,26 @@ def main():
         st.title("Exploratory Data Analysis")
         profile_df = ProfileReport(df)
         st_profile_report(profile_df)
+
+    if choice == 'Modelling':
+        st.title('Choose the supervised ML')
+        RegorClas = st.radio('', ['Regresion', 'Clasification'])
+
+        st.title('Choose the Target Column')
+        chosen_target = st.selectbox('', df.columns)
+
+        if RegorClas == 'Regresion':
+            if st.button('Run Modelling'):
+                df = preprocessing_data(df)
+                train_set, val_set, test_set = train_val_test_split(df)
+                remove_labels(train_set, val_set, test_set, chosen_target)
+                df_classifiers = search_model(c_names, classifiers, X_train, y_train, X_val, y_val, X_test, y_test, 1)
+                st.dataframe(df_classifiers)
+
+                with st.spinner('Loading...'):
+
+
+
 
 if __name__ == "__main__":
     main()
