@@ -1,18 +1,15 @@
-# Data Manipulation.
-import pandas as pd
 
-# DS Division.
-from sklearn.model_selection import train_test_split
-
-# Precision Metrics.
-from sklearn.metrics import f1_score
-
-# Warnings.
-import warnings
+import pandas as pd # Data Manipulation
+from sklearn.impute import KNNImputer # Imputer
+from sklearn.model_selection import train_test_split # DS Division
+from sklearn.metrics import f1_score # Precision Metrics
+import warnings # Warnings.
 warnings.filterwarnings("ignore")
+import time # Time.
 
-# Time.
-import time
+import models
+
+
 
 
 # 1. Preprocessing Model
@@ -51,7 +48,7 @@ def remove_labels(train_set, val_set, test_set, target_name):
 
 
 # 4. Search Model
-def search_model(names, models, X_train, y_train, X_val, y_val, X_test, y_test, pos_label):
+def search_model(cnames=models.c_names, clssfrs=models.classifiers, X_train, y_train, X_val, y_val, X_test, y_test, pos_label):
     f1_Vali = []
     f1_Test = []
     fitting = []

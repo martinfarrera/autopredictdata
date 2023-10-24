@@ -27,18 +27,20 @@ def main():
 
     if choice == 'Modelling':
         st.title('Choose the supervised ML')
-        RegorClas = st.radio('', ['Regresion', 'Clasification'])
+        chosen_model = st.radio('', ['Regresion', 'Clasification'])
 
         st.title('Choose the Target Column')
         chosen_target = st.selectbox('', df.columns)
 
-        if RegorClas == 'Regresion':
-            if st.button('Run Modelling'):
+        if chosen_model == 'Clasification':
+            if st.button('Run Preprocessing'):
                 df = preprocessing_data(df)
                 train_set, val_set, test_set = train_val_test_split(df)
-                remove_labels(train_set, val_set, test_set, chosen_target)
-                df_classifiers = search_model(c_names, classifiers, X_train, y_train, X_val, y_val, X_test, y_test, 1)
-                st.dataframe(df_classifiers)
+                X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
+
+                if st.button('Run Modelling'):
+                    df_classifiers = search_model(X_train, y_train, X_val, y_val, X_test, y_test, 1)
+                    st.dataframe(df_classifiers)
 
                 with st.spinner('Loading...'):
 
