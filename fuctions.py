@@ -6,8 +6,7 @@ from sklearn.metrics import f1_score # Precision Metrics
 import warnings # Warnings.
 warnings.filterwarnings("ignore")
 import time # Time.
-
-import models
+import models # models.Py
 
 
 
@@ -48,13 +47,13 @@ def remove_labels(train_set, val_set, test_set, target_name):
 
 
 # 4. Search Model
-def search_model(cnames=models.c_names, clssfrs=models.classifiers, X_train, y_train, X_val, y_val, X_test, y_test, pos_label):
+def search_model(X_train, y_train, X_val, y_val, X_test, y_test, pos_label, cnames=models.c_names, clssfrs=models.classifiers):
     f1_Vali = []
     f1_Test = []
     fitting = []
     times = []
 
-    for clf in models:
+    for clf in clssfrs:
         # ======= TRAIN ========
         start = time.time()
         clf.fit(X_train, y_train.values.ravel())
@@ -74,7 +73,7 @@ def search_model(cnames=models.c_names, clssfrs=models.classifiers, X_train, y_t
         f1_Test.append(round(f1_test * 100, 3))
         fitting.append(round((f1_val - f1_test) * 100, 3))
 
-    df_models = pd.DataFrame([f1_Vali, f1_Test, fitting, times], columns=names,
+    df_models = pd.DataFrame([f1_Vali, f1_Test, fitting, times], columns=cnames,
                              index=['F1 Vali', 'F1 Test', 'Fitting', 'Seconds'])
     df_models = df_models.sort_values(by=['F1 Vali', 'F1 Test', 'Seconds', 'Fitting'], axis=1, ascending=False)
 
