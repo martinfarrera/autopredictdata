@@ -46,7 +46,6 @@ def main():
             chosen_target = st.selectbox('', df.select_dtypes(exclude='object').columns)
             if st.button('Run Modelling'):
                 train_set, val_set, test_set = train_val_test_split(df)
-                st.dataframe(train_set)
                 X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
                 st.dataframe(X_train)
                 st.dataframe(y_train)

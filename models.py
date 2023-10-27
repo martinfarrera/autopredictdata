@@ -9,7 +9,7 @@ from sklearn.tree import DecisionTreeRegressor
 
 # Regresion
 r_names = ["Lasso", "Elastic-Net", "Logistic Regr", "Linear SVR", "SGD Regressor",
-           "KNeighbors Regr", "Decision Tree Regr" ]
+           "KNeighbors Regr", "Decision Tree Regr"]
 
 # Models.
 regresor = [
