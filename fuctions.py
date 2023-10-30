@@ -1,8 +1,10 @@
 
 import pandas as pd # Data Manipulation
 from sklearn.impute import KNNImputer # Imputer
+from sklearn.preprocessing import RobustScaler # Data Standardization.
 from sklearn.model_selection import train_test_split # DS Division
 from sklearn.metrics import f1_score # Precision Metrics
+from imblearn.over_sampling import SMOTE # Balancing
 import warnings # Warnings.
 warnings.filterwarnings("ignore")
 import time # Time.
@@ -12,20 +14,25 @@ import models # models.Py
 
 
 # 1. Preprocessing Model
-def preprocessing_data(df):
-    # Get the features of type object.
+def dummies(df):
+    df = df.reset_index(drop=True)
     cat_obj = df.select_dtypes(include='object').columns
-    # Object type Features are Coded.
     df = pd.get_dummies(df, columns=cat_obj, prefix_sep='-', drop_first=True)
-    # Imputer Data
+    return df
+
+def imputer(df):
     df_values = KNNImputer(n_neighbors=4, weights="uniform").fit_transform(df)
-    # New DF
     df = pd.DataFrame(df_values, columns=df.columns)
+    return df
+
+def standardize(df):
+    c_features = ['age', 'avg_glucose_level', 'bmi']
+    df[c_features] = RobustScaler().fit_transform(df[c_features])
     return df
 
 
 # 2. Divide the DF into the set of Training, Validation and Test.
-def train_val_test_split(df, rstate=42, shuffle=True, stratify=None):
+def split(df, rstate=42, shuffle=True, stratify=None):
     strat = df[stratify] if stratify else None
     train_set, test_set = train_test_split(
         df, test_size=0.4, random_state=rstate, shuffle=shuffle, stratify=strat)
@@ -45,6 +52,12 @@ def remove_labels(train_set, val_set, test_set, target_name):
     y_test = test_set[target_name].copy()
     return X_train, y_train, X_val, y_val, X_test, y_test
 
+def balancing(X_train, y_train, X_val, y_val, X_test, y_test):
+    smote = SMOTE(random_state=42)
+    X_train, y_train = smote.fit_resample(X_train, y_train)
+    X_val, y_val = smote.fit_resample(X_val, y_val)
+    X_test, y_test = smote.fit_resample(X_test, y_test)
+    return X_train, y_train, X_val, y_val, X_test, y_test
 
 # 4. Search Model
 def search_model(X_train, y_train, X_val, y_val, X_test, y_test, pos_label, cnames=models.c_names, clssfrs=models.classifiers):
