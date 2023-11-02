@@ -47,26 +47,43 @@ def modelling():
     st.subheader('Choose the supervised ML')
     try:
         df = pd.read_csv('./DS/ds_upload.csv', index_col=0)
-        chosen_target = st.selectbox('selecciona', df.columns)
-        features_for_regresion = list(df.select_dtypes(include=['float64']))
-        features_for_clasification = list(df.select_dtypes(exclude=['float64']))
+        df = df.reset_index()
+        df = df.drop('id', axis=1)
+        df = encoding(df)
+        df = imputer(df)
+        df = standardize(df)
 
-        if chosen_target in features_for_clasification:
-            st.subheader('Clasificacion')
-            if st.button('Run Preprocesing'):
-                df = dummies(df)
-                df = imputer(df)
-                df = standardize(df)
-                df = pd.read_csv('./DS/ds_preprocesing.csv', index_col=0)
-                train_set, val_set, test_set = split(df)
+        train_set, val_set, test_set = split(df)
+        train_set, val_set, test_set = unnamed_col(train_set, val_set, test_set)
+
+        chosen_target = st.selectbox('Selecciona etiqueta a predecir: ', train_set.columns)
+        features_for_regresion = list(train_set.select_dtypes(include=['float64']).columns)
+
+        if chosen_target in features_for_regresion:
+            st.subheader('Regression')
+            if st.button('Run Regression Modelling'):
+
                 X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(
                     train_set, val_set, test_set, chosen_target)
                 X_train, y_train, X_val, y_val, X_test, y_test =  balancing(
                     X_train, y_train, X_val, y_val, X_test, y_test)
-                st.dataframe(X_train)
-                st.dataframe(y_train)
-                df_classifiers = search_model(X_train, y_train, X_val, y_val, X_test, y_test, 1)
+
+                df_classifiers = search_model(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
                 st.dataframe(df_classifiers)
+
+        if chosen_target not in features_for_regresion:
+            st.subheader('Clasificacion')
+            chosen_positive_label = st.selectbox('Selecciona el valor positivo: ', df[chosen_target].unique())
+            if st.button('Run Clasification Modelling'):
+
+                X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(
+                    train_set, val_set, test_set, chosen_target)
+                X_train, y_train, X_val, y_val, X_test, y_test =  balancing(
+                    X_train, y_train, X_val, y_val, X_test, y_test)
+
+                df_classifiers = search_model(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
+                st.dataframe(df_classifiers)
+
     except FileNotFoundError:
         st.warning("El archivo 'csv' no se encontró. Cargue un conjunto de datos en la opción Upload antes de ejecutar el perfilado.")
 

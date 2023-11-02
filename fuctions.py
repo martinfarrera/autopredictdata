@@ -11,25 +11,47 @@ import time # Time.
 import models # models.Py
 
 
+def convert_types(df):
+    cat_obj = df.select_dtypes(include=['string','bool','category']).columns
+    df[cat_obj] = df[cat_obj].astype('object')
+    cat_int = df.select_dtypes(include=['int']).columns
+    df[cat_int] = df[cat_int].astype('int64')
+    cat_float = df.select_dtypes(include=['float']).columns
+    df[cat_float] = df[cat_float].astype('float64')
+    return df
 
+def unnamed_col(train_set, val_set, test_set):
+    # Verificar si la columna "Unnamed: 0" está presente y eliminarla en cada DataFrame
+    for df in [train_set, val_set, test_set]:
+        if 'Unnamed: 0' in df.columns:
+            # Eliminar la columna "Unnamed: 0"
+            df.drop('Unnamed: 0', axis=1, inplace=True)
+
+    return train_set, val_set, test_set
 
 # 1. Preprocessing Model
-def dummies(df):
-    df = df.reset_index(drop=True)
+def encoding(df):
     cat_obj = df.select_dtypes(include='object').columns
-    df = pd.get_dummies(df, columns=cat_obj, prefix_sep='-', drop_first=True)
+    df = pd.get_dummies(df, columns=cat_obj, prefix_sep=' - ')
+
+    # Convertir columnas booleanas en tipo int64
+    for feature in df.columns:
+        if df[feature].dtype == bool:
+            df[feature] = df[feature].astype(int)
+
     return df
 
 def imputer(df):
+    original_dtypes = df.dtypes.to_dict()
     df_values = KNNImputer(n_neighbors=4, weights="uniform").fit_transform(df)
     df = pd.DataFrame(df_values, columns=df.columns)
+    df = df.astype(original_dtypes)
     return df
 
 def standardize(df):
     c_features = ['age', 'avg_glucose_level', 'bmi']
     df[c_features] = RobustScaler().fit_transform(df[c_features])
     return df
-
 
 # 2. Divide the DF into the set of Training, Validation and Test.
 def split(df, rstate=42, shuffle=True, stratify=None):
@@ -39,6 +61,15 @@ def split(df, rstate=42, shuffle=True, stratify=None):
     strat = test_set[stratify] if stratify else None
     val_set, test_set = train_test_split(
         test_set, test_size=0.5, random_state=rstate, shuffle=shuffle, stratify=strat)
+
+    train_set.to_csv('./DS/train_set.csv')
+    val_set.to_csv('./DS/val_set.csv')
+    test_set.to_csv('./DS/test_set.csv')
+
+    train_set = pd.read_csv('./DS/train_set.csv')
+    val_set = pd.read_csv('./DS/val_set.csv')
+    test_set = pd.read_csv('./DS/test_set.csv')
+
     return train_set, val_set, test_set
 
 

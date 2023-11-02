@@ -65,3 +65,44 @@ def Home():
 
 if __name__ == "__main__":
     Home()
+
+
+
+def modelling():
+    st.subheader('Choose the supervised ML')
+    try:
+        df = pd.read_csv('./DS/ds_upload.csv', index_col=0)
+        chosen_target = st.selectbox('selecciona', df.columns)
+        features_for_regresion = list(df.select_dtypes(include=['float64']))
+        features_for_clasification = list(df.select_dtypes(exclude=['float64']))
+
+        if chosen_target in features_for_clasification:
+            st.subheader('Clasificacion')
+            if st.button('Run Preprocesing'):
+                st.dataframe(df)
+                st.dataframe(df.dtypes)
+                df = dummies(df)
+                st.dataframe(df)
+                st.dataframe(df.dtypes)
+                df = imputer(df)
+                st.dataframe(df)
+                st.dataframe(df.dtypes)
+                st.write('stand')
+                df = standardize(df)
+                st.dataframe(df)
+                st.dataframe(df.dtypes)
+                df = pd.read_csv('./DS/ds_preprocesing.csv', index_col=0)
+                train_set, val_set, test_set = split(df)
+                st.write('split')
+                X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(
+                    train_set, val_set, test_set, chosen_target)
+                st.write('remove')
+                X_train, y_train, X_val, y_val, X_test, y_test =  balancing(
+                    X_train, y_train, X_val, y_val, X_test, y_test)
+                st.dataframe(X_train)
+                st.dataframe(y_train)
+                df_classifiers = search_model(X_train, y_train, X_val, y_val, X_test, y_test, 1)
+                st.dataframe(df_classifiers)
+    except FileNotFoundError:
+        st.warning("El archivo 'csv' no se encontró. Cargue un conjunto de datos en la opción Upload antes de ejecutar el perfilado.")
+

@@ -87,3 +87,11 @@ def sideBar():
 
 if __name__ == "__main__":
     sideBar()
+
+
+def balancing(X_train, y_train, X_val, y_val, X_test, y_test):
+    smote = SMOTE(random_state=42)
+    X_train, y_train = smote.fit_resample(X_train, y_train)
+    X_val, y_val = smote.fit_resample(X_val, y_val)
+    X_test, y_test = smote.fit_resample(X_test, y_test)
+    return X_train, y_train, X_val, y_val, X_test, y_test
