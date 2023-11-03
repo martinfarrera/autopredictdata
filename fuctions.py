@@ -1,5 +1,6 @@
 
 import pandas as pd # Data Manipulation
+import numpy as np
 from sklearn.impute import KNNImputer # Imputer
 from sklearn.preprocessing import RobustScaler # Data Standardization.
 from sklearn.model_selection import train_test_split # DS Division
@@ -10,6 +11,14 @@ warnings.filterwarnings("ignore")
 import time # Time.
 import models # models.Py
 
+def df_revision(df):
+    col_values_count = {i: df[i].value_counts().shape[0] for i in df.columns}
+    col_na = {i: ('🔴' if df[i].isna().any() == True else '-') for i in df.columns}
+    col_isObj = {i:('🟢' if df[i].dtype in ['object', 'category', 'string', 'bool'] else '-') for i in df.columns}
+    col_isStand = {i: ('🟢' if df[i].dtype in ['int', 'int64','float', 'float64'] else '-') for i in df.columns}
+    col_dtype = {i: df[i].dtype for i in df.columns}
+    df_revision = pd.DataFrame([col_values_count, col_na, col_isObj, col_isStand, col_dtype,], index=['Valores Unicos', 'Vacios', 'Codificables', 'Estandarizables', 'Tipo de Dato']).transpose()
+    return df_revision
 
 def convert_types(df):
     cat_obj = df.select_dtypes(include=['string','bool','category']).columns
