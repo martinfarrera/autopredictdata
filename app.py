@@ -68,10 +68,24 @@ def modelling():
 
         st.markdown("##")
         chosen_target = st.selectbox('Selecciona etiqueta a predecir: ', train_set.columns)
-        features_for_regresion = list(train_set.select_dtypes(include=['float64']).columns)
+        features_for_clasification = list(train_set.select_dtypes(exclude=['float64']).columns)
 
         if st.button('Calcula el Modelo'):
-            if chosen_target in features_for_regresion:
+            chosen_positive_label = st.selectbox('Selecciona el valor positivo: ', df[chosen_target].unique())
+
+            if chosen_target in features_for_clasification:
+                st.markdown("##")
+                st.subheader('El modelo que necesitas es de Clasificación')
+
+                X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
+                X_train, y_train, X_val, y_val, X_test, y_test = balancing(X_train, y_train, X_val, y_val, X_test, y_test)
+
+                df_models = search_model(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
+                df_models.to_csv('./DS/ds_models.csv')
+                df_models = pd.read_csv('./DS/ds_models.csv', index_col=0)
+                st.dataframe(df_models)
+
+            else:
                 st.markdown("##")
                 st.subheader('El modelo que necesitas es de Regresión')
 
@@ -80,19 +94,6 @@ def modelling():
                     X_train, y_train, X_val, y_val, X_test, y_test = balancing(X_train, y_train, X_val, y_val, X_test, y_test)
 
                     df_models = search_model(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
-                    st.dataframe(df_models)
-
-            if chosen_target not in features_for_regresion:
-                st.markdown("##")
-                st.subheader('El modelo que necesitas es de Clasificación')
-                chosen_positive_label = st.selectbox('Selecciona el valor positivo: ', df[chosen_target].unique())
-
-                if st.button('Crea el Modelo de Clasificación'):
-                    X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
-                    X_train, y_train, X_val, y_val, X_test, y_test = balancing(X_train, y_train, X_val, y_val, X_test, y_test)
-
-                    df_models = search_model(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
-                    df_models.to_csv('./DS/ds_models.csv')
                     st.dataframe(df_models)
 
     except FileNotFoundError:

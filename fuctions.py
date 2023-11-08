@@ -75,10 +75,6 @@ def split(df, rstate=42, shuffle=True, stratify=None):
     val_set.to_csv('./DS/val_set.csv')
     test_set.to_csv('./DS/test_set.csv')
 
-    train_set = pd.read_csv('./DS/train_set.csv')
-    val_set = pd.read_csv('./DS/val_set.csv')
-    test_set = pd.read_csv('./DS/test_set.csv')
-
     return train_set, val_set, test_set
 
 
