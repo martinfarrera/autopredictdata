@@ -8,19 +8,16 @@ from sklearn.tree import DecisionTreeRegressor
 
 
 # Regresion
-r_names = ["Lasso", "Elastic-Net", "Logistic Regr", "Linear SVR", "SGD Regressor",
-           "KNeighbors Regr", "Decision Tree Regr"]
+rnames = ["Lasso", "Elastic-Net", "Linear SVR", "SGD Regressor", "KNeighbors Regr", "Decision Tree Regr"]
 
 # Models.
-regresor = [
+regressors = [
     linear_model.Lasso(alpha=0.1),
     ElasticNet(random_state=0),
-    LogisticRegression(random_state=0),
     LinearSVR(dual='auto', random_state=0, tol=1e-05),
     SGDRegressor(max_iter=1000, tol=1e-3),
     KNeighborsRegressor(n_neighbors=2),
     DecisionTreeRegressor(random_state=0)
-
 ]
 
 
@@ -38,7 +35,7 @@ from xgboost import XGBClassifier
 from catboost import CatBoostClassifier
 
 # Names.
-c_names = ["Nearest Neighbors", "SVM Linear", "SVM RBF", "Gaussian NB", "Bernoulli NB", "QuadraticDA",
+cnames = ["Nearest Neighbors", "SVM Linear", "SVM RBF", "Gaussian NB", "Bernoulli NB", "QuadraticDA",
            "Stochastic GDC", "Decision Tree", "Random Forest", "NN MLP", "Ada Boost", "XGBC Boost", "Cat Boost"]
 
 # Models.

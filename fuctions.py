@@ -5,6 +5,7 @@ from sklearn.impute import KNNImputer # Imputer
 from sklearn.preprocessing import RobustScaler # Data Standardization.
 from sklearn.model_selection import train_test_split # DS Division
 from sklearn.metrics import f1_score # Precision Metrics
+from sklearn.metrics import r2_score
 from imblearn.over_sampling import SMOTE # Balancing
 import warnings # Warnings.
 warnings.filterwarnings("ignore")
@@ -58,7 +59,7 @@ def imputer(df):
     return df
 
 def standardize(df):
-    c_features = ['age', 'avg_glucose_level', 'bmi']
+    c_features = list(df.select_dtypes(include=['float64']).columns)
     df[c_features] = RobustScaler().fit_transform(df[c_features])
     return df
 
@@ -96,13 +97,13 @@ def balancing(X_train, y_train, X_val, y_val, X_test, y_test):
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 # 4. Search Model
-def search_model(X_train, y_train, X_val, y_val, X_test, y_test, pos_label, cnames=models.c_names, clssfrs=models.classifiers):
+def search_model_cl(X_train, y_train, X_val, y_val, X_test, y_test, pos_label, cnames=models.cnames, classifiers=models.classifiers):
     f1_Vali = []
     f1_Test = []
     fitting = []
     times = []
 
-    for clf in clssfrs:
+    for clf in classifiers:
         # ======= TRAIN ========
         start = time.time()
         clf.fit(X_train, y_train.values.ravel())
@@ -127,3 +128,35 @@ def search_model(X_train, y_train, X_val, y_val, X_test, y_test, pos_label, cnam
     df_models = df_models.sort_values(by=['F1 Vali', 'F1 Test', 'Seconds', 'Fitting'], axis=1, ascending=False)
 
     return df_models
+
+def search_model_rg(X_train, y_train, X_val, y_val, X_test, y_test, rnames=models.rnames, regressors=models.regressors):
+    r2_Vali = []
+    r2_Test = []
+    fitting = []
+    times = []
+
+    for reg in regressors:
+        # ======= TRAIN ========
+        start = time.time()
+        reg.fit(X_train, y_train.values.ravel())
+        end = time.time()
+        times.append(round(end - start, 3))
+
+        # ===== VALIDATION =====
+        y_val_pred = reg.predict(X_val)
+        r2_val = r2_score(y_val, y_val_pred)
+
+        # ======= TEST ========
+        y_test_pred = reg.predict(X_test)
+        r2_test = r2_score(y_test, y_test_pred)
+
+        # ======= SCORE =======
+        r2_Vali.append(round(r2_val, 3))
+        r2_Test.append(round(r2_test, 3))
+        fitting.append(round((r2_val - r2_test), 3))
+
+    df_models_rg = pd.DataFrame([r2_Vali, r2_Test, fitting, times], columns=rnames,
+                             index=['R2 Vali', 'R2 Test', 'Fitting', 'Seconds'])
+    df_models_rg = df_models_rg.sort_values(by=['R2 Vali', 'R2 Test', 'Seconds', 'Fitting'], axis=1, ascending=False)
+
+    return df_models_rg
