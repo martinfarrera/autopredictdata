@@ -5,6 +5,7 @@ from streamlit_option_menu import option_menu
 from streamlit_pandas_profiling import st_profile_report
 from ydata_profiling import ProfileReport
 from fuctions import *
+import models
 
 st.set_page_config(page_title="Auto Data Predict",page_icon="🔮️",layout="wide")
 st.title("️️🔮️ Auto Data Predict")
@@ -56,7 +57,9 @@ def modelling():
         col1, col2 = st.columns(2, gap='large')
 
         with col1:
+            st.markdown("##")
             st.subheader('Personaliza tu modelo de Machine Learning')
+
             showData = st.multiselect('Seleciona la columna a eliminar: ', df.columns)
             if st.button('Eliminar Columnas'):
                 df = df.drop(df[showData], axis=1)
@@ -64,9 +67,21 @@ def modelling():
                 st.info("Se eliminaron las columnas seleccionadas")
 
             df = pd.read_csv('./DS/ds_delete_features.csv', index_col=0)
-            df = encoding(df)
-            df = imputer(df)
-            df = standardize(df)
+
+            preprocess_functions = {
+                'Codificación': encoding,
+                'Llenar Vacios': imputer,
+                'Estandarización': standardize
+            }
+
+            chosen_prepro = st.multiselect('Seleciona los preprocesamientos: ', list(preprocess_functions.keys()))
+
+            if st.button('Preprocesamiento'):
+                for ftc_name in chosen_prepro:
+                    df = preprocess_functions[ftc_name](df)
+                df.to_csv('./DS/ds_preprosesing.csv')
+
+            df = pd.read_csv('./DS/ds_preprosesing.csv', index_col=0)
 
             train_set, val_set, test_set = split(df)
             train_set, val_set, test_set = unnamed_col(train_set, val_set, test_set)
@@ -89,22 +104,16 @@ def modelling():
                         X_train, y_train, X_val, y_val, X_test, y_test = balancing(X_train, y_train, X_val, y_val, X_test, y_test)
 
                         df_models_cl = search_model_cl(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
-                        df_models_cl.to_csv('./DS/ds_models_cl.csv')
-                        df_models_cl = pd.read_csv('./DS/ds_models_cl.csv', index_col=0)
                         st.dataframe(df_models_cl)
 
                     if chosen_target not in features_for_clasification:
                         st.markdown("##")
                         st.subheader('El modelo que necesitas es de Regresión')
 
-                        if st.button('Crea el Modelo de Regresión'):
-                            X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
-                            X_train, y_train, X_val, y_val, X_test, y_test = balancing(X_train, y_train, X_val, y_val, X_test, y_test)
+                        X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
 
-                            df_models_rg = search_model_rg(X_train, y_train, X_val, y_val, X_test, y_test)
-                            df_models_rg.to_csv('./DS/ds_models_rg.csv')
-                            df_models_rg = pd.read_csv('./DS/ds_models_rg.csv', index_col=0)
-                            st.dataframe(df_models_rg)
+                        df_models_rg = search_model_rg(X_train, y_train, X_val, y_val, X_test, y_test)
+                        st.dataframe(df_models_rg)
 
     except FileNotFoundError:
         pass

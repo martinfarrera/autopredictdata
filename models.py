@@ -1,27 +1,5 @@
-from sklearn import linear_model
-from sklearn.linear_model import ElasticNet
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVR
-from sklearn.linear_model import SGDRegressor
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.tree import DecisionTreeRegressor
+# CLASSIFIERS ----------------------------------
 
-
-# Regresion
-rnames = ["Lasso", "Elastic-Net", "Linear SVR", "SGD Regressor", "KNeighbors Regr", "Decision Tree Regr"]
-
-# Models.
-regressors = [
-    linear_model.Lasso(alpha=0.1),
-    ElasticNet(random_state=0),
-    LinearSVR(dual='auto', random_state=0, tol=1e-05),
-    SGDRegressor(max_iter=1000, tol=1e-3),
-    KNeighborsRegressor(n_neighbors=2),
-    DecisionTreeRegressor(random_state=0)
-]
-
-
-# Classifiers
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB, BernoulliNB
@@ -53,3 +31,32 @@ classifiers = [
     AdaBoostClassifier(),
     XGBClassifier(),
     CatBoostClassifier(logging_level='Silent')]
+
+# REGRESORS ----------------------------------
+
+from sklearn.linear_model import LinearRegression, Lasso, ElasticNet, Ridge, HuberRegressor
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
+from xgboost import XGBRegressor
+
+# Regresion
+rnames = [
+    "Linear Regression", "Lasso", "Elastic Net", "Ridge Regression", "Huber Regressor",
+    "Random Forest Regressor", "Gradient Boosting Regressor", "Support Vector Regression",
+    "KNeighbors Regressor", "XGBoost Regressor"
+]
+
+# Models.
+regressors = [
+    LinearRegression(),
+    Lasso(alpha=0.1),
+    ElasticNet(random_state=0),
+    Ridge(alpha=1.0),
+    HuberRegressor(),
+    RandomForestRegressor(random_state=0),
+    GradientBoostingRegressor(random_state=0),
+    SVR(),
+    KNeighborsRegressor(n_neighbors=2),
+    XGBRegressor(objective="reg:squarederror", random_state=0)
+]
