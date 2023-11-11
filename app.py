@@ -6,6 +6,7 @@ from streamlit_pandas_profiling import st_profile_report
 from ydata_profiling import ProfileReport
 from fuctions import *
 import models
+import fuctions
 
 st.set_page_config(page_title="Auto Data Predict",page_icon="🔮️",layout="wide")
 st.title("️️🔮️ Auto Data Predict")
@@ -25,14 +26,26 @@ def upload():
         df = pd.read_csv(file, index_col=0)
         st.dataframe(df)
         df.to_csv('./DS/ds_upload.csv')
+        st.markdown("Mira más información sobre el DataSet que subiste:")
+        st.dataframe(df_revision(df))
+        st.markdown("##")
+        st.markdown("---")
 
     st.markdown("##")
-    st.subheader("Dataset de Prueba")
-    st.markdown("Si no cuentas con una usa este DS sobre los acidentes cerebrovasculares.")
-    df_test = pd.read_csv('./resources/healthcare-stroke-data.csv', index_col=0)
+    st.markdown("##")
+
+    col1, col2 = st.columns(2, gap='large')
+    with col1:
+        st.subheader("Dataset de Prueba")
+        st.markdown("Prueba la app con este DS sobre pacientes con acidentes cerebrovasculares.")
+        df_test = pd.read_csv('./resources/healthcare-stroke-data.csv', index_col=0)
+    with col2:
+        st.markdown("##")
+        if st.button('Usa este DataSet'):
+            df_test.to_csv('./DS/ds_upload.csv')
     st.dataframe(df_test)
-    if st.button('Usa este DataSet Test'):
-        df_test.to_csv('./DS/ds_upload.csv')
+    st.markdown("Mira más información sobre el DataSet de pruebas:")
+    st.dataframe(df_revision(df_test))
 
 def profiling():
     st.subheader("Exploratory Data Analysis")
@@ -45,8 +58,8 @@ def profiling():
         st.warning("El archivo 'csv' no se encontró. Cargue un conjunto de datos en la opción Upload antes de ejecutar el perfilado.")
 
 def modelling():
-    st.subheader('Personaliza tu modelo de Machine Learning')
-    st.markdown("##")
+    st.subheader('Revisión de Datos')
+    st.markdown('Mira las caracteristicas del DS que usaras para crear tu modelo.')
 
     try:
         df = pd.read_csv('./DS/ds_upload.csv', index_col=0)
@@ -58,28 +71,16 @@ def modelling():
 
         with col1:
             st.markdown("##")
-            st.subheader('Personaliza tu modelo de Machine Learning')
+            st.subheader('Preprocesamiento de Datos')
 
-            showData = st.multiselect('Seleciona la columna a eliminar: ', df.columns)
-            if st.button('Eliminar Columnas'):
+            showData = st.multiselect('Columnas a eliminar (si no hay nada por eliminar deja vacio): ', df.columns)
+            chosen_prepro = st.multiselect('Elige los pasos que quieres usar en el preprocesamiento: ', ['Codificación','Llenar Vacios', 'Estandarización'])
+
+            if st.button('Hacerlo'):
                 df = df.drop(df[showData], axis=1)
-                df.to_csv('./DS/ds_delete_features.csv')
                 st.info("Se eliminaron las columnas seleccionadas")
 
-            df = pd.read_csv('./DS/ds_delete_features.csv', index_col=0)
-
-            preprocess_functions = {
-                'Codificación': encoding,
-                'Llenar Vacios': imputer,
-                'Estandarización': standardize
-            }
-
-            chosen_prepro = st.multiselect('Seleciona los preprocesamientos: ', list(preprocess_functions.keys()))
-
-            if st.button('Preprocesamiento'):
-                for ftc_name in chosen_prepro:
-                    df = preprocess_functions[ftc_name](df)
-                df.to_csv('./DS/ds_preprosesing.csv')
+                preprocesing(df, chosen_prepro)
 
             df = pd.read_csv('./DS/ds_preprosesing.csv', index_col=0)
 
@@ -87,14 +88,14 @@ def modelling():
             train_set, val_set, test_set = unnamed_col(train_set, val_set, test_set)
 
             st.markdown("##")
-            st.subheader('El modelo que necesitas es de Clasificación')
-            chosen_target = st.selectbox('Selecciona etiqueta a predecir: ', train_set.columns)
+            st.subheader('Predicción')
+            chosen_target = st.selectbox('Selecciona el dato que quieres predecir: ', train_set.columns)
             features_for_clasification = list(train_set.select_dtypes(exclude=['float64']).columns)
 
             if chosen_target in features_for_clasification:
                 chosen_positive_label = st.selectbox('Selecciona el valor positivo: ', df[chosen_target].unique())
 
-            if st.button('Crea el Modelo'):
+            if st.button('Crear Modelo'):
                 with col2:
                     if chosen_target in features_for_clasification:
                         st.markdown("##")

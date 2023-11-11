@@ -1,3 +1,4 @@
+
 # CLASSIFIERS ----------------------------------
 
 from sklearn.neighbors import KNeighborsClassifier
@@ -42,10 +43,8 @@ from xgboost import XGBRegressor
 
 # Regresion
 rnames = [
-    "Linear Regression", "Lasso", "Elastic Net", "Ridge Regression", "Huber Regressor",
-    "Random Forest Regressor", "Gradient Boosting Regressor", "Support Vector Regression",
-    "KNeighbors Regressor", "XGBoost Regressor"
-]
+    "Linear", "Lasso", "Elastic Net", "Ridge", "Huber", "Random Forest",
+    "Gradient Boosting", "Support Vector", "KNeighbors", "XGBoost"]
 
 # Models.
 regressors = [

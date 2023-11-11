@@ -12,13 +12,27 @@ warnings.filterwarnings("ignore")
 import time # Time.
 import models # models.Py
 
+
 def df_revision(df):
     col_values_count = {i: df[i].value_counts().shape[0] for i in df.columns}
-    col_na = {i: ('🔴' if df[i].isna().any() == True else '-') for i in df.columns}
-    col_isObj = {i:('🟢' if df[i].dtype in ['object', 'category', 'string', 'bool'] else '-') for i in df.columns}
-    col_isStand = {i: ('🟢' if df[i].dtype in ['int', 'int64','float', 'float64'] else '-') for i in df.columns}
+    col_na = {i: ('🔸' if df[i].isna().any() == True else '-') for i in df.columns}
+    col_isObj = {i:('🔹' if df[i].dtype == 'object' else '-') for i in df.columns}
+    col_isStand = {i: ('🔹' if df[i].dtype == 'int' else '-') for i in df.columns}
     col_dtype = {i: df[i].dtype for i in df.columns}
-    df_revision = pd.DataFrame([col_values_count, col_na, col_isObj, col_isStand, col_dtype,], index=['Valores Unicos', 'Vacios', 'Codificables', 'Estandarizables', 'Tipo de Dato']).transpose()
+
+    # Agregar una columna con el porcentaje de valores faltantes
+    col_porcentaje_faltante = {
+        i: f'{(df[i].isna().sum() / len(df)) * 100:.2f}% - {"🔸" if df[i].isna().any() else "-"}' if df[i].isna().any() else '-'
+        for i in df.columns
+    }
+
+    # Agregar una columna 'balanceo' solo para las variables 'object' e 'int'
+    col_balanceo = {
+        i: '🔸 ' if df[i].dtype in ['object', 'int'] and len(df[i].value_counts()) > 1 and (df[i].value_counts() / len(df)).min() < 0.25 else '-'
+        for i in df.columns
+    }
+
+    df_revision = pd.DataFrame([col_porcentaje_faltante, col_isObj, col_isStand, col_values_count, col_balanceo], index=['% Faltantes', 'Codificables', 'Estandarizables', 'Valores Unicos', 'Desbalanceados']).transpose()
     return df_revision
 
 def convert_types(df):
@@ -39,7 +53,21 @@ def unnamed_col(train_set, val_set, test_set):
 
     return train_set, val_set, test_set
 
-# 1. Preprocessing Model
+
+def preprocesing(df, chosen_prepro):
+
+    pre_functions = {
+        'Codificación': encoding,
+        'Llenar Vacios': imputer,
+        'Estandarización': standardize
+    }
+
+    for ftc_name in chosen_prepro:
+        df = pre_functions[ftc_name](df)
+    df.to_csv('./DS/ds_preprosesing.csv')
+    return df
+
+
 def encoding(df):
     cat_obj = df.select_dtypes(include='object').columns
     df = pd.get_dummies(df, columns=cat_obj, prefix_sep=' - ')
@@ -71,10 +99,6 @@ def split(df, rstate=42, shuffle=True, stratify=None):
     strat = test_set[stratify] if stratify else None
     val_set, test_set = train_test_split(
         test_set, test_size=0.5, random_state=rstate, shuffle=shuffle, stratify=strat)
-
-    train_set.to_csv('./DS/train_set.csv')
-    val_set.to_csv('./DS/val_set.csv')
-    test_set.to_csv('./DS/test_set.csv')
 
     return train_set, val_set, test_set
 
