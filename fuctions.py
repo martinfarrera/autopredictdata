@@ -9,6 +9,7 @@ from sklearn.metrics import r2_score
 from imblearn.over_sampling import SMOTE # Balancing
 import warnings # Warnings.
 warnings.filterwarnings("ignore")
+import pickle
 import time # Time.
 import models # models.Py
 
@@ -147,11 +148,15 @@ def search_model_cl(X_train, y_train, X_val, y_val, X_test, y_test, pos_label, c
         f1_Test.append(round(f1_test * 100, 3))
         fitting.append(round((f1_val - f1_test) * 100, 3))
 
-    df_models = pd.DataFrame([f1_Vali, f1_Test, fitting, times], columns=cnames,
+    df_models_cl = pd.DataFrame([f1_Vali, f1_Test, fitting, times], columns=cnames,
                              index=['F1 Vali', 'F1 Test', 'Fitting', 'Seconds'])
-    df_models = df_models.sort_values(by=['F1 Vali', 'F1 Test', 'Seconds', 'Fitting'], axis=1, ascending=False)
+    df_models_cl = df_models_cl.sort_values(by=['F1 Vali', 'F1 Test', 'Seconds', 'Fitting'], axis=1, ascending=False)
 
-    return df_models
+    best_model = classifiers[0]
+    with open(f'./models/best_model.pkl', 'wb') as file:
+        pickle.dump(best_model, file)
+
+    return df_models_cl
 
 def search_model_rg(X_train, y_train, X_val, y_val, X_test, y_test, rnames=models.rnames, regressors=models.regressors):
     r2_Vali = []
@@ -182,5 +187,9 @@ def search_model_rg(X_train, y_train, X_val, y_val, X_test, y_test, rnames=model
     df_models_rg = pd.DataFrame([r2_Vali, r2_Test, fitting, times], columns=rnames,
                              index=['R2 Vali', 'R2 Test', 'Fitting', 'Seconds'])
     df_models_rg = df_models_rg.sort_values(by=['R2 Vali', 'R2 Test', 'Seconds', 'Fitting'], axis=1, ascending=False)
+
+    best_model = regressors[0]
+    with open(f'./models/best_model.pkl', 'wb') as file:
+        pickle.dump(best_model, file)
 
     return df_models_rg

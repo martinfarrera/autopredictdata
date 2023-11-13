@@ -71,16 +71,19 @@ def modelling():
 
         with col1:
             st.markdown("##")
-            st.subheader('Preprocesamiento de Datos')
+            st.subheader('Preprocesamiento')
 
-            showData = st.multiselect('Columnas a eliminar (si no hay nada por eliminar deja vacio): ', df.columns)
-            chosen_prepro = st.multiselect('Elige los pasos que quieres usar en el preprocesamiento: ', ['Codificación','Llenar Vacios', 'Estandarización'])
+            showData = st.multiselect('Columnas a eliminar (no quieres eliminar, deja vacio): ', df.columns)
+
+            opciones = ['Codificación','Llenar Vacios', 'Estandarización']
+            chosen_prepro = st.multiselect('Elige los pasos que quieres usar en el preprocesamiento:', opciones , default=opciones )
 
             if st.button('Hacerlo'):
                 df = df.drop(df[showData], axis=1)
                 st.info("Se eliminaron las columnas seleccionadas")
 
                 preprocesing(df, chosen_prepro)
+                st.info("Se realizó el preprocesamiento de forma correcta")
 
             df = pd.read_csv('./DS/ds_preprosesing.csv', index_col=0)
 
@@ -89,41 +92,65 @@ def modelling():
 
             st.markdown("##")
             st.subheader('Predicción')
-            chosen_target = st.selectbox('Selecciona el dato que quieres predecir: ', train_set.columns)
+            chosen_target = st.selectbox('Selecciona la categoria que quieres predecir: ', train_set.columns)
             features_for_clasification = list(train_set.select_dtypes(exclude=['float64']).columns)
 
             if chosen_target in features_for_clasification:
-                chosen_positive_label = st.selectbox('Selecciona el valor positivo: ', df[chosen_target].unique())
+                chosen_positive_label = st.selectbox('Selecciona el valor positivo:', df[chosen_target].unique(),
+                                                     format_func=lambda x: 'si' if x == 1 else 'no')
 
             if st.button('Crear Modelo'):
                 with col2:
                     if chosen_target in features_for_clasification:
                         st.markdown("##")
-                        st.subheader('Estos son los mejores modelos')
+                        st.subheader('Modelos de ML para tu problema')
+                        st.write('Por los datos de proporcionaste el tipo de modelo creado es de Clasificación.')
 
-                        X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
-                        X_train, y_train, X_val, y_val, X_test, y_test = balancing(X_train, y_train, X_val, y_val, X_test, y_test)
+                        with st.spinner('Cargando... ⏳🤖 Por favor espera unos segundos.'):
 
-                        df_models_cl = search_model_cl(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
-                        st.dataframe(df_models_cl)
+                            X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
+                            X_train, y_train, X_val, y_val, X_test, y_test = balancing(X_train, y_train, X_val, y_val, X_test, y_test)
+
+                            df_models_cl = search_model_cl(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
+
+                            st.info(f'- {df_models_cl.columns[:][0]} es es mejor modelo de clasificación con un score de {round(df_models_cl.values[:][0][0],1)}% de exactitud.')
+                            st.dataframe(df_models_cl)
+                            st.download_button('Download Model', './models/best_model.pkl', file_name="best_model.pkl")
 
                     if chosen_target not in features_for_clasification:
                         st.markdown("##")
-                        st.subheader('El modelo que necesitas es de Regresión')
+                        st.subheader('Modelos de ML para tu problema')
+                        st.write('Por los datos de proporcionaste el tipo de modelo creado es de Regresión.')
 
-                        X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
+                        with st.spinner('Cargando... ⏳🤖 Por favor espera unos segundos.'):
 
-                        df_models_rg = search_model_rg(X_train, y_train, X_val, y_val, X_test, y_test)
-                        st.dataframe(df_models_rg)
+                            X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
+
+                            df_models_rg = search_model_rg(X_train, y_train, X_val, y_val, X_test, y_test)
+
+                            st.info(f'- {df_models_rg.columns[:][0]} es es mejor modelo de clasificación con un score de {round(df_models_rg.values[:][0][0], 1)}% de exactitud.')
+                            st.dataframe(df_models_rg)
+                            st.download_button('Download Model', './models/best_model.pkl', file_name="best_model.pkl")
 
     except FileNotFoundError:
         pass
+
+
+def testing():
+    st.subheader("Prueba el modelo que creaste")
+
+    with open('./models/best_model.pkl', 'rb') as file:
+            loaded_model = pickle.load(file)
+
+    data = pd.read_csv('./DS/ds_preprosesing.csv').columns
+    st.write(data)
+
 
 def sideBar():
     with st.sidebar:
         selected=option_menu(
             menu_title="Menu",
-            options=["Info","Upload","Profiling", "Modelling", "Dashboard"],
+            options=["Info","Upload","Profiling", "Modelling", "Testing"],
             icons=["info", "archive", "menu-up", "menu-button", "eye"],
             menu_icon="cast",
             default_index=0
@@ -141,8 +168,8 @@ def sideBar():
     if selected=="Modelling":
         modelling()
 
-    if selected=="Dashboard":
-        dashboard()
+    if selected=="Testing":
+        testing()
 
 
 if __name__ == "__main__":

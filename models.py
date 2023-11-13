@@ -14,8 +14,8 @@ from xgboost import XGBClassifier
 from catboost import CatBoostClassifier
 
 # Names.
-cnames = ["Nearest Neighbors", "SVM Linear", "SVM RBF", "Gaussian NB", "Bernoulli NB", "QuadraticDA",
-           "Stochastic GDC", "Decision Tree", "Random Forest", "NN MLP", "Ada Boost", "XGBC Boost", "Cat Boost"]
+cnames = ["Nearest_Neighbors", "SVM_Linear", "SVM_RBF", "Gaussian_NB", "Bernoulli_NB", "QuadraticDA",
+           "Stochastic_GDC", "Decision_Tree", "Random_Forest", "NN_MLP", "Ada_Boost", "XGBC_Boost", "Cat_Boost"]
 
 # Models.
 classifiers = [
