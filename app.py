@@ -73,16 +73,16 @@ def modelling():
             st.markdown("##")
             st.subheader('Preprocesamiento')
 
-            showData = st.multiselect('Columnas a eliminar (no quieres eliminar, deja vacio): ', df.columns)
+            chosen_col_del = st.multiselect('Columnas a eliminar (no quieres eliminar, deja vacio): ', df.columns)
 
-            opciones = ['Codificación','Llenar Vacios', 'Estandarización']
-            chosen_prepro = st.multiselect('Elige los pasos que quieres usar en el preprocesamiento:', opciones , default=opciones )
+            options_prep = ['Codificación','Llenar Vacios', 'Estandarización']
+            chosen_prep = st.multiselect('Elige los pasos que quieres usar en el preprocesamiento:', options_prep , default=options_prep )
 
             if st.button('Hacerlo'):
-                df = df.drop(df[showData], axis=1)
+                df = df.drop(df[chosen_col_del], axis=1)
                 st.info("Se eliminaron las columnas seleccionadas")
 
-                preprocesing(df, chosen_prepro)
+                preprocesing(df, chosen_prep)
                 st.info("Se realizó el preprocesamiento de forma correcta")
 
             df = pd.read_csv('./DS/ds_preprosesing.csv', index_col=0)
@@ -140,11 +140,44 @@ def testing():
     st.subheader("Prueba el modelo que creaste")
 
     with open('./models/best_model.pkl', 'rb') as file:
-            loaded_model = pickle.load(file)
+        loaded_model = pickle.load(file)
 
-    data = pd.read_csv('./DS/ds_preprosesing.csv').columns
-    st.write(data)
+    col_names = pd.read_csv('./DS/X_train.csv')
+    original_dtypes = col_names.dtypes.to_dict()
+    col_names = col_names.columns
 
+    col_values = pd.read_csv('./DS/ds_encode.csv')
+    col_values = col_values[col_names]
+    col_values = col_values.values
+
+    data = pd.DataFrame(col_values, columns=col_names)
+    data = data.astype(original_dtypes)
+    data = data.drop('Unnamed: 0', axis=1)
+
+
+    resultados = {}
+
+    for i in data.columns:
+        if data[i].dtype == 'int64':
+            selected_value = st.selectbox(f'Selecciona un valor para {i}', data[i].unique())
+        elif data[i].dtype == 'float64':
+            min_value = data[i].min()
+            max_value = data[i].max()
+            selected_value = st.slider(f'Selecciona un valor para {i}', min_value, max_value, value=data[i].mean())
+        else:
+            selected_value = st.text_input(f'{i}', value='Valor no seleccionado')
+
+        resultados[i] = selected_value
+
+
+    st.write()
+
+    with open('./models/best_model.pkl', 'rb') as file:
+        modelo = pickle.load(file)
+
+    values = pd.DataFrame.from_dict(resultados, orient='index', columns=['Valor Seleccionado']).values
+    predict = modelo.predict(values)
+    st.write(predict)
 
 def sideBar():
     with st.sidebar:

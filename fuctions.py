@@ -36,6 +36,7 @@ def df_revision(df):
     df_revision = pd.DataFrame([col_porcentaje_faltante, col_isObj, col_isStand, col_values_count, col_balanceo], index=['% Faltantes', 'Codificables', 'Estandarizables', 'Valores Unicos', 'Desbalanceados']).transpose()
     return df_revision
 
+
 def convert_types(df):
     cat_obj = df.select_dtypes(include=['string','bool','category']).columns
     df[cat_obj] = df[cat_obj].astype('object')
@@ -78,6 +79,8 @@ def encoding(df):
         if df[feature].dtype == bool:
             df[feature] = df[feature].astype(int)
 
+    df.to_csv('./DS/ds_encode.csv')
+
     return df
 
 def imputer(df):
@@ -85,11 +88,15 @@ def imputer(df):
     df_values = KNNImputer(n_neighbors=4, weights="uniform").fit_transform(df)
     df = pd.DataFrame(df_values, columns=df.columns)
     df = df.astype(original_dtypes)
+
     return df
 
 def standardize(df):
+    scaler = RobustScaler()
     c_features = list(df.select_dtypes(include=['float64']).columns)
-    df[c_features] = RobustScaler().fit_transform(df[c_features])
+    df[c_features] = scaler.fit_transform(df[c_features])
+    with open('./models/robust_scaler.pkl', 'wb') as scaler_file:
+        pickle.dump(scaler, scaler_file)
     return df
 
 # 2. Divide the DF into the set of Training, Validation and Test.
@@ -112,6 +119,11 @@ def remove_labels(train_set, val_set, test_set, target_name):
     y_val = val_set[target_name].copy()
     X_test = test_set.drop(target_name, axis=1)
     y_test = test_set[target_name].copy()
+
+    X_train.to_csv('./DS/X_train.csv')
+    X_val.to_csv('./DS/X_val.csv')
+    X_test.to_csv('./DS/X_test.csv')
+
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 def balancing(X_train, y_train, X_val, y_val, X_test, y_test):
