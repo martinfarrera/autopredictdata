@@ -140,43 +140,43 @@ def testing():
     st.subheader("Prueba el modelo que creaste")
 
     with open('./models/best_model.pkl', 'rb') as file:
-        loaded_model = pickle.load(file)
+        modelo = pickle.load(file)
+
+    with open('./models/robust_scaler.pkl', 'rb') as fileR:
+        scaler = pickle.load(fileR)
 
     col_names = pd.read_csv('./DS/X_train.csv')
-    original_dtypes = col_names.dtypes.to_dict()
+    col_dtypes = col_names.dtypes.to_dict()
     col_names = col_names.columns
 
     col_values = pd.read_csv('./DS/ds_encode.csv')
     col_values = col_values[col_names]
     col_values = col_values.values
 
-    data = pd.DataFrame(col_values, columns=col_names)
-    data = data.astype(original_dtypes)
-    data = data.drop('Unnamed: 0', axis=1)
+    df = pd.DataFrame(col_values, columns=col_names)
+    df = df.astype(col_dtypes)
+    df = df.drop('Unnamed: 0', axis=1)
 
+    new_ejemplo = {}
 
-    resultados = {}
-
-    for i in data.columns:
-        if data[i].dtype == 'int64':
-            selected_value = st.selectbox(f'Selecciona un valor para {i}', data[i].unique())
-        elif data[i].dtype == 'float64':
-            min_value = data[i].min()
-            max_value = data[i].max()
-            selected_value = st.slider(f'Selecciona un valor para {i}', min_value, max_value, value=data[i].mean())
+    for i in df.columns:
+        if df[i].dtype == 'int64':
+            selected_value = st.selectbox(f'Selecciona un valor para {i}', df[i].unique())
+        elif df[i].dtype == 'float64':
+            min_value = df[i].min()
+            max_value = df[i].max()
+            selected_value = st.slider(f'Selecciona un valor para {i}', min_value, max_value, value=df[i].mean())
         else:
             selected_value = st.text_input(f'{i}', value='Valor no seleccionado')
 
-        resultados[i] = selected_value
+        new_ejemplo[i] = selected_value
 
-
-    st.write()
-
-    with open('./models/best_model.pkl', 'rb') as file:
-        modelo = pickle.load(file)
-
-    values = pd.DataFrame.from_dict(resultados, orient='index', columns=['Valor Seleccionado']).values
+    values = pd.DataFrame(new_ejemplo, index=[0]).values
+    st.dataframe(values)
+    scalado = scaler.fit(values)
+    st.dataframe(values)
     predict = modelo.predict(values)
+    st.dataframe(values)
     st.write(predict)
 
 def sideBar():
