@@ -49,13 +49,13 @@ def upload():
 
 def profiling():
     st.subheader("Exploratory Data Analysis")
-
-    try:
-        df = pd.read_csv('./DS/ds_upload.csv', index_col=0)
-        profile_df = df.profile_report()
-        st_profile_report(profile_df)
-    except FileNotFoundError:
-        st.warning("El archivo 'csv' no se encontró. Cargue un conjunto de datos en la opción Upload antes de ejecutar el perfilado.")
+    with st.spinner('Cargando... ⏳🤖 Por favor espera unos segundos.'):
+        try:
+            df = pd.read_csv('./DS/ds_upload.csv', index_col=0)
+            profile_df = df.profile_report()
+            st_profile_report(profile_df)
+        except FileNotFoundError:
+            st.warning("El archivo 'csv' no se encontró. Cargue un conjunto de datos en la opción Upload antes de ejecutar el perfilado.")
 
 def modelling():
     st.subheader('Revisión de Datos')
@@ -157,27 +157,32 @@ def testing():
     df = df.astype(col_dtypes)
     df = df.drop('Unnamed: 0', axis=1)
 
-    new_ejemplo = {}
+    col1, col2 = st.columns(2, gap='large')
 
-    for i in df.columns:
-        if df[i].dtype == 'int64':
-            selected_value = st.selectbox(f'Selecciona un valor para {i}', df[i].unique())
-        elif df[i].dtype == 'float64':
-            min_value = df[i].min()
-            max_value = df[i].max()
-            selected_value = st.slider(f'Selecciona un valor para {i}', min_value, max_value, value=df[i].mean())
-        else:
-            selected_value = st.text_input(f'{i}', value='Valor no seleccionado')
+    with col1:
 
-        new_ejemplo[i] = selected_value
+        new_ejemplo = {}
 
-    values = pd.DataFrame(new_ejemplo, index=[0]).values
-    st.dataframe(values)
-    scalado = scaler.fit(values)
-    st.dataframe(values)
-    predict = modelo.predict(values)
-    st.dataframe(values)
-    st.write(predict)
+        for i in df.columns:
+            if df[i].dtype == 'int64':
+                selected_value = st.selectbox(f'Selecciona un valor para {i}', df[i].unique())
+            elif df[i].dtype == 'float64':
+                min_value = df[i].min()
+                max_value = df[i].max()
+                selected_value = st.slider(f'Selecciona un valor para {i}', min_value, max_value, value=df[i].mean())
+            else:
+                selected_value = st.text_input(f'{i}', value='Valor no seleccionado')
+
+            new_ejemplo[i] = selected_value
+
+        if st.button('Predecir'):
+            values = pd.DataFrame(new_ejemplo, index=[0])
+            st.dataframe(values)
+            col_s = list(df.select_dtypes(include=['float64']).columns)
+            values_s = scaler.transform(values[col_s])
+            values[col_s] = values_s
+            predict = modelo.predict(values)
+            st.write(predict)
 
 def sideBar():
     with st.sidebar:
