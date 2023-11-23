@@ -12,13 +12,18 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
 from catboost import CatBoostClassifier
+from sklearn.linear_model import LogisticRegression
 
-# Names.
-cnames = ["Nearest_Neighbors", "SVM_Linear", "SVM_RBF", "Gaussian_NB", "Bernoulli_NB", "QuadraticDA",
-           "Stochastic_GDC", "Decision_Tree", "Random_Forest", "NN_MLP", "Ada_Boost", "XGBC_Boost", "Cat_Boost"]
+# Nombres de modelos de clasificación.
+cnames = [
+    "Logistic Regression", "K-Nearest Neighbors", "Support Vector Machine (Linear)",
+    "Support Vector Machine (RBF)", "Gaussian Naive Bayes", "Bernoulli Naive Bayes",
+    "Quadratic Discriminant Analysis", "Stochastic Gradient Descent", "Decision Tree",
+    "Random Forest", "Neural Network (MLP)", "AdaBoost", "XGBoost", "CatBoost"]
 
-# Models.
+# Modelos de clasificación.
 classifiers = [
+    LogisticRegression(),
     KNeighborsClassifier(3),
     SVC(kernel="linear", C=0.010),
     SVC(gamma=2, C=1),
@@ -31,7 +36,8 @@ classifiers = [
     MLPClassifier(alpha=1, max_iter=1000),
     AdaBoostClassifier(),
     XGBClassifier(),
-    CatBoostClassifier(logging_level='Silent')]
+    CatBoostClassifier(logging_level='Silent')
+]
 
 # REGRESORS ----------------------------------
 

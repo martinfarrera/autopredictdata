@@ -121,8 +121,11 @@ def remove_labels(train_set, val_set, test_set, target_name):
     y_test = test_set[target_name].copy()
 
     X_train.to_csv('./DS/X_train.csv')
+    y_train.to_csv('./DS/y_train.csv')
     X_val.to_csv('./DS/X_val.csv')
+    y_val.to_csv('./DS/y_val.csv')
     X_test.to_csv('./DS/X_test.csv')
+    y_test.to_csv('./DS/y_test.csv')
 
     return X_train, y_train, X_val, y_val, X_test, y_test
 
