@@ -91,14 +91,13 @@ def modelling():
             train_set, val_set, test_set = unnamed_col(train_set, val_set, test_set)
 
             st.markdown("##")
-            st.subheader('Predicción')
+            st.subheader('Predicciónes')
             chosen_target = st.selectbox('Selecciona la categoria que quieres predecir: ', train_set.columns)
             features_for_clasification = list(train_set.select_dtypes(exclude=['float64']).columns)
 
             if chosen_target in features_for_clasification:
-                chosen_positive_label = st.selectbox('Selecciona el valor positivo:', df[chosen_target].unique(),
-                                                     format_func=lambda x: 'si' if x == 1 else 'no')
-
+                chosen_positive_label = st.selectbox('Selecciona el valor positivo:', df[chosen_target].unique(), format_func=lambda x: 'si' if x == 1 else 'no')
+                
             if st.button('Crear Modelo'):
                 with col2:
                     if chosen_target in features_for_clasification:
