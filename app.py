@@ -71,7 +71,7 @@ def modelling():
 
         with col1:
             st.markdown("##")
-            st.subheader('Preprocesamiento')
+            st.subheader('Preprocesamientos')
 
             chosen_col_del = st.multiselect('Columnas a eliminar (no quieres eliminar, deja vacio): ', df.columns)
 
