@@ -72,8 +72,9 @@ def modelling():
         with col1:
             st.markdown("##")
             st.subheader('Preprocesamiento')
-
-            chosen_col_del = st.multiselect('Columnas a eliminar (no quieres eliminar, deja vacio): ', df.columns)
+            st.subheader('Preprocesamientos')
+            
+            chosen_col_del = st.multiselect('Columnas a eliminar (no quieres eliminar, deja vacio): ',ß df.columns)
 
             options_prep = ['Codificación','Llenar Vacios', 'Estandarización']
             chosen_prep = st.multiselect('Elige los pasos que quieres usar en el preprocesamiento:', options_prep , default=options_prep )
@@ -135,50 +136,6 @@ def modelling():
         pass
 
 
-def obtener_categorias_originales(dataframe_entrenamiento):
-    # Supongamos que las variables categóricas están en la lista 'variables_categoricas'
-    variables_categoricas = list(dataframe_entrenamiento.select_dtypes(include='object').columns)
-    
-    categorias_originales = {}
-    for variable in variables_categoricas:
-        categorias_originales[variable] = dataframe_entrenamiento[variable].unique().tolist()
-    
-    return categorias_originales
-
-def transformar_a_categorias_necesarias(nueva_instancia, categorias_originales):
-    for variable, categorias in categorias_originales.items():
-        # Asegúrate de que la nueva instancia tenga las variables categóricas originales
-        if nueva_instancia[variable] not in categorias:
-            nueva_instancia[variable] = categorias[0]  # Puedes elegir otra estrategia según tus necesidades
-    return nueva_instancia
-
-def estandarizar_variables(nueva_instancia, robust_scaler):
-    # Asegúrate de que las variables estén en el mismo orden que se usó durante el entrenamiento
-    variables_ordenadas = list(nueva_instancia.select_dtypes(include=['float64']).columns)
-    
-    # Selecciona las variables numéricas
-    variables_numericas = nueva_instancia[variables_ordenadas]
-    
-    # Estandarizar las variables numéricas
-    variables_estandarizadas = robust_scaler.transform(variables_numericas.values.reshape(1, -1))
-    
-    # Actualizar la nueva instancia con las variables estandarizadas
-    nueva_instancia[variables_ordenadas] = variables_estandarizadas.flatten()
-    
-    return nueva_instancia
-
-def predecir_con_modelo_cargado(nueva_instancia, modelo):
-    # Asegúrate de que las variables estén en el mismo orden que se usó durante el entrenamiento
-    variables_ordenadas = list(nueva_instancia.columns)
-    
-    # Selecciona las variables necesarias para la predicción
-    variables_prediccion = nueva_instancia[variables_ordenadas]
-    
-    # Realizar la predicción
-    prediccion = modelo.predict(variables_prediccion.values.reshape(1, -1))
-    
-    return prediccion
-
 def testing():
     st.subheader("Prueba el modelo que creaste")
 
@@ -187,10 +144,6 @@ def testing():
 
     with open('./models/robust_scaler.pkl', 'rb') as fileR:
         scaler = pickle.load(fileR)
-
-    # Cargar el DataFrame original para obtener las categorías originales
-    df_entrenamiento = pd.read_csv('./DS/X_train.csv')
-    categorias_originales = obtener_categorias_originales(df_entrenamiento)
 
     col_names = pd.read_csv('./DS/X_train.csv')
     col_dtypes = col_names.dtypes.to_dict()
@@ -224,21 +177,12 @@ def testing():
 
         if st.button('Predecir'):
             values = pd.DataFrame(new_ejemplo, index=[0])
-
-            # 2. Transformar nuevas instancias a todas las categorías necesarias
-            values_transformada = transformar_a_categorias_necesarias(values, categorias_originales)
-
-            # 3. Estandarizar las variables con RobustScaler
-            values_estandarizada = estandarizar_variables(values_transformada, scaler)
-
-            st.dataframe(values_estandarizada)
-            
-            # 4. Realizar la predicción con el modelo cargado
-            predict = predecir_con_modelo_cargado(values_estandarizada, modelo)
+            st.dataframe(values)
+            col_s = list(df.select_dtypes(include=['float64']).columns)
+            values_s = scaler.transform(values[col_s])
+            values[col_s] = values_s
+            predict = modelo.predict(values)
             st.write(predict)
-
-# Llamada a la función de prueba
-testing()
 
 def sideBar():
     with st.sidebar:
