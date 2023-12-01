@@ -116,6 +116,15 @@ def modelling():
                             st.info(f'- {df_models_cl.columns[:][0]} es es mejor modelo de clasificación con un score de {round(df_models_cl.values[:][0][0],1)}% de exactitud.')
                             st.dataframe(df_models_cl)
                             st.download_button('Download Model', './models/best_model.pkl', file_name="best_model.pkl")
+                            
+                                                        X_train, y_train, X_val, y_val, X_test, y_test = remove_labels(train_set, val_set, test_set, chosen_target)
+                            X_train, y_train, X_val, y_val, X_test, y_test = balancing(X_train, y_train, X_val, y_val, X_test, y_test)
+
+                            df_models_cl = search_model_cl(X_train, y_train, X_val, y_val, X_test, y_test, chosen_positive_label)
+
+                            st.info(f'- {df_models_cl.columns[:][0]} es es mejor modelo de clasificación con un score de {round(df_models_cl.values[:][0][0],1)}% de exactitud.')
+                            st.dataframe(df_models_cl)
+                            st.download_button('Download Model', './models/best_model.pkl', file_name="best_model.pkl")
 
                     if chosen_target not in features_for_clasification:
                         st.markdown("##")
