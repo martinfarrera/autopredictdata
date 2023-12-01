@@ -82,6 +82,7 @@ def modelling():
             if st.button('Hacerlo'):
                 df = df.drop(df[chosen_col_del], axis=1)
                 st.info("Se eliminaron las columnas seleccionadas")
+                st.info("Se eliminaron las filas seleccionadas")
 
                 preprocesing(df, chosen_prep)
                 st.info("Se realizó el preprocesamiento de forma correcta")
